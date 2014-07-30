@@ -47,4 +47,7 @@ int hasNextSLL(Iterator_sll* ite);
 /* イテレータを次に進める */
 void* getNextSLL(Iterator_sll* ite);
 
+/* 要素のメモリを全部解放 */
+void freeSLL(SimpleLinkedList* psll);
+
 #endif

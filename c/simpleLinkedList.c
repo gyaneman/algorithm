@@ -82,3 +82,17 @@ void* getNextSLL(Iterator_sll* ite){
 	*ite = (*ite)->next;
 	return (*ite)->data;
 }
+
+void freeSLL(SimpleLinkedList* psll){
+	Iterator_sll fr;
+	Iterator_sll ite;
+	ite = getIteratorSLL(psll);
+	for (; hasNextSLL(&ite);){
+		fr = ite;
+		getNextSLL(&ite);
+		free(fr);
+	}
+	getNextSLL(&ite);
+	free(ite);
+	free(psll);
+}
