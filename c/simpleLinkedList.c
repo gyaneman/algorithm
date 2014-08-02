@@ -94,5 +94,4 @@ void freeSLL(SimpleLinkedList* psll){
 	}
 	getNextSLL(&ite);
 	free(ite);
-	free(psll);
 }

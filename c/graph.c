@@ -1,5 +1,5 @@
 #include "graph.h"
-#include "simpleLinkedList.h"
+//#include "simpleLinkedList.h"
 
 static void* malloc_Graph(const int size){
 	void* ret = malloc(size);
@@ -46,16 +46,19 @@ Graph* make_Graph(){
 
 void init_Graph(Graph* graph){
 	initSLL(&(graph->setOfNode));
+	graph->numOfNode = 0;
 	graph->numOfEge = 0;
 }
 
-void addNode_Graph(Graph* graph, const int id){
+int addNode_Graph(Graph* graph){
 	Node* node;
 	node = (Node*)malloc_Graph(sizeof(Node));
-	node->id = id;
+	graph->numOfNode++;
+	node->id = graph->numOfNode;
 	initSLL(&(node->setOfLinked));
 	
 	addHeadSLL(&(graph->setOfNode), node);
+	return graph->numOfNode;
 }
 
 void link_Graph(Graph* graph, int a, int b, int weight){
@@ -72,11 +75,9 @@ void link_Graph(Graph* graph, int a, int b, int weight){
 		tmp = (Node*)getNextSLL(&ite);
 		if (tmp->id == a && node_a == NULL){
 			node_a = tmp;
-			printf("tmp id = %d\n", tmp->id);
 		}
 		if (tmp->id == b && node_b == NULL){
 			node_b = tmp;
-			printf("tmp id = %d\n", tmp->id);
 		}
 	}
 	if (node_a == NULL || node_b == NULL)
@@ -85,11 +86,8 @@ void link_Graph(Graph* graph, int a, int b, int weight){
 	// 見つけたノードのつながっている先に互いに追加
 	lnode = (LinkedNode*)malloc_Graph(sizeof(LinkedNode));
 	lnode->link = node_a;
-	printf("id = %d\n", node_b->id);
 	addHeadSLL(&(node_b->setOfLinked), lnode);
 	lnode->weight = weight;
-
-	printf("3");
 
 	lnode = (LinkedNode*)malloc_Graph(sizeof(LinkedNode));
 	lnode->link = node_b;
@@ -104,4 +102,58 @@ void free_Graph(Graph* graph){
 	}
 	freeSLL(&(graph->setOfNode));	// ノードの集合データのメモリ解放
 	free(graph);
+}
+
+void solve_Dijkstra(Graph *graph, const int startId, int *result){
+	Iterator_sll ite;
+	Node* start = NULL;
+	PQueue *pq = makePQueue(30, DESCENDING);
+	LinkedNode *lnode = NULL;
+	int numSolved = 0;
+	int currentId;
+	Node *currentNode = NULL;
+	int i;
+	int priority;
+	int flg = 0;
+	Node *tmpNode = NULL;
+	PQItem pqitem;
+
+	for (i = 0; i < graph->numOfNode; i++){
+		result[i] = -1;
+	}
+
+	/* search start node */
+	for (ite = getIteratorSLL(&(graph->setOfNode)); hasNextSLL(&ite);){
+		start = (Node*)getNextSLL(&ite);
+		if (start->id == startId) break;
+	}
+	if (start == NULL) errorHandling("Dijkstra    startId is not exist.\n");
+
+	/* solve */
+	currentId = startId;
+	currentNode = start;
+	result[currentId - 1] = 0;
+	while (1){
+		// 現在のノードからつながっているノードをすべてpush
+		for (ite = getIteratorSLL(&(currentNode->setOfLinked)); hasNextSLL(&ite);){
+			lnode = getNextSLL(&ite);
+			PQ_push(pq, result[currentId-1] + lnode->weight, lnode->link);
+		}
+		// 順番にpopしていく
+		priority = 0;
+		while (1){
+			if (pq->num == 0) {
+				flg = 1;
+				break;
+			}
+			pqitem = PQ_pop(pq);
+			tmpNode = (Node*)(pqitem.obj);
+			if (result[tmpNode->id - 1] != -1) continue;
+			result[tmpNode->id - 1] = pqitem.priority;
+			currentNode = tmpNode;
+			currentId = tmpNode->id;
+			break;
+		}
+		if (flg) break;
+	}
 }
