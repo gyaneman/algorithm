@@ -2,7 +2,6 @@
 
 using namespace std;
 
-
 constexpr void fib(int array[],int num){
 	array[0] = 1;
 	array[1] = 1;
